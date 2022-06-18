@@ -1,0 +1,6 @@
+FROM tomcat
+LABEL maintainer="xmigrate.cloud"
+COPY {{ artefacts.APP_DIR }} /usr/local/tomcat/webapps
+COPY {{ artefacts.APP_CONFIG }} /usr/local/tomcat/conf/tomcat-users.xml
+EXPOSE {{ artefacts.APP_PORT }}
+CMD ["catalina.sh", "run"]
