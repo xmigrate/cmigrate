@@ -9,27 +9,39 @@ def find_runtime():
     """Find the application runtime running on this server"""
     app_runtimes = []
     for proc in psutil.process_iter():
-        if "tomcat" in proc.environ().values():
+        if "tomcat" in proc.as_dict().values():
             app_runtimes.append("tomcat")
-        elif "apache2" in proc.environ().values():
-            app_runtimes.append("apache2")
-    return app_runtimes
+        elif "httpd" in proc.as_dict().values():
+            app_runtimes.append("httpd")
+    
+    return list(set(app_runtimes))
 
 
 def get_artefacts(app_runtime):
     """Get application related environment variable and configurations"""
     artefact = dict()
-    for proc in psutil.process_iter():
-        if app_runtime in proc.environ().values():
-            artefact['APP_RUNTIME'] = app_runtime
-            war_files = glob(proc.environ()['CATALINA_BASE'] + '/webapps/*.war')
-            artefact['APP_DIR'] = war_files
-            artefact['APP_CONFIG'] = proc.environ()['CATALINA_BASE'] + '/conf/tomcat-users.xml'
-            for conn in proc.connections():
-                if conn.laddr.port == 8005:
-                    continue
-                else:
-                    artefact['APP_PORT'] = conn.laddr.port
+
+    if app_runtime == 'tomcat':
+        for proc in psutil.process_iter():
+            if "tomcat" in proc.as_dict().values():
+                break
+        artefact['APP_RUNTIME'] = app_runtime
+        war_files = glob(proc.environ()['CATALINA_BASE'] + '/webapps/*.war')
+        artefact['APP_DIR'] = war_files
+        artefact['APP_CONFIG'] = proc.environ()['CATALINA_BASE'] + '/conf/tomcat-users.xml'
+        for conn in proc.connections():
+            if conn.laddr.port == 8005:
+                continue
+            else:
+                artefact['APP_PORT'] = conn.laddr.port
+    if app_runtime == 'httpd':
+        for proc in psutil.process_iter():
+            if "httpd" in proc.as_dict().values():
+                break
+        # artefact['APP_RUNTIME'] = app_runtime
+        #TODO: find config file and undertand the web dir, then copy both to artfact folder
+        # html_files = glob(proc.environ()['CATALINA_BASE'] + '/webapps/*.war')
+        print("Work in progress")
     return artefact
 
 def generate_docker_file(artefacts):
@@ -58,12 +70,11 @@ def generate_docker_file(artefacts):
 @click.option('--runtime', default='empty', help='Application runtime, example: tomcat')
 def build_dockerfile(runtime):
     artefacts = dict()
+    app_runtime = []
     if runtime == 'empty':
         app_runtime = find_runtime()
         if len(app_runtime) == 1:
             artefacts = get_artefacts(app_runtime[0])
-        elif len(app_runtime) > 1:
-            print(f'Found multiple application runtimes, pass one in --runtime parameter: {",".join(app_runtime)}')
     else:
         artefacts = get_artefacts(runtime)
     if len(artefacts.keys()) > 0:
@@ -72,6 +83,8 @@ def build_dockerfile(runtime):
         with open('Dockerfile', 'w') as f:
             f.write(dockerfile)
         print(f"Generated Dockerfile")
+    elif len(app_runtime) > 1:
+        print(f'Found multiple application runtimes, pass one in --runtime parameter: {",".join(list(set(app_runtime)))}')
     else:
         print(f"Couldn't find any application running on this server")
 
