@@ -13,6 +13,8 @@ def find_runtime():
             app_runtimes.append("tomcat")
         elif "httpd" in proc.as_dict().values():
             app_runtimes.append("httpd")
+        elif "jboss" in str(proc.as_dict().values()):
+            app_runtimes.append("jboss")
     
     return list(set(app_runtimes))
 
@@ -34,6 +36,21 @@ def get_artefacts(app_runtime):
                 continue
             else:
                 artefact['APP_PORT'] = conn.laddr.port
+        # jboss
+        if app_runtime=='jboss':
+            for proc in psutil.process_iter():
+                if "jboss" in str(proc.as_dict().values()):
+                    break
+            artefact['APP_RUNTIME'] = app_runtime
+            war_files = glob(proc.environ()['JBOSS_HOME'] + 'standalone/deployments/*.war')
+            artefact['APP_DIR'] = war_files
+            artefact['APP_CONFIG'] = proc.environ()['JBOSS_HOME'] + '/bin/standalone/configuration/standalone.xml'
+            for conn in proc.connections():
+                if conn.laddr.port == 8080:
+                    continue
+                else:
+                    artefact['APP_PORT'] = conn.laddr.port
+
     if app_runtime == 'httpd':
         for proc in psutil.process_iter():
             if "httpd" in proc.as_dict().values():
@@ -49,6 +66,10 @@ def generate_docker_file(artefacts):
     templateEnv = jinja2.Environment(loader=templateLoader)
     if artefacts['APP_RUNTIME'] == "tomcat":
         TEMPLATE_FILE = "Dockerfile-tomcat.j2"
+    elif artefacts['APP_RUNTIME'] == "jboss":
+        TEMPLATE_FILE = "Dockerfile-jboss.j2"
+    # elif artefacts['APP_RUNTIME'] == "httpd":
+    #     TEMPLATE_FILE = "Dockerfile-httpd.j2"
     template = templateEnv.get_template(TEMPLATE_FILE)
     output_dir = './artefact'
     isExist = os.path.exists(output_dir)
