@@ -31,7 +31,7 @@ All the code for cmigrate is written in python. Jinja is a web template engine f
 
 ## 🚀How to run? 
 
-Run the xmigrate.py file.
+Run the cmigrate.py file.
 
 if you have multiple application runtime running you can pass one in --runtime parameter.
 
