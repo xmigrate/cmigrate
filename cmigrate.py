@@ -111,4 +111,3 @@ def build_dockerfile(runtime):
 
 if __name__ == '__main__':
     build_dockerfile()
-
