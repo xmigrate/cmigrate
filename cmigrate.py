@@ -42,9 +42,9 @@ def get_artefacts(app_runtime):
                 if "jboss" in str(proc.as_dict().values()):
                     break
             artefact['APP_RUNTIME'] = app_runtime
-            war_files = glob(proc.environ()['JBOSS_HOME'] + 'standalone/deployments/*.war')
+            war_files = glob(proc.environ()['JBOSS_HOME'] + '/standalone/deployments/*.war')
             artefact['APP_DIR'] = war_files
-            artefact['APP_CONFIG'] = proc.environ()['JBOSS_HOME'] + '/bin/standalone/configuration/standalone.xml'
+            artefact['APP_CONFIG'] = proc.environ()['JBOSS_HOME'] + '/standalone/configuration/standalone.xml'
             for conn in proc.connections():
                 if conn.laddr.port == 8080:
                     continue
