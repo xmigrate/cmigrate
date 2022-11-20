@@ -36,20 +36,21 @@ def get_artefacts(app_runtime):
                 continue
             else:
                 artefact['APP_PORT'] = conn.laddr.port
-        # jboss
-        if app_runtime=='jboss':
-            for proc in psutil.process_iter():
-                if "jboss" in str(proc.as_dict().values()):
-                    break
-            artefact['APP_RUNTIME'] = app_runtime
-            war_files = glob(proc.environ()['JBOSS_HOME'] + '/standalone/deployments/*.war')
-            artefact['APP_DIR'] = war_files
-            artefact['APP_CONFIG'] = proc.environ()['JBOSS_HOME'] + '/standalone/configuration/standalone.xml'
-            for conn in proc.connections():
-                if conn.laddr.port == 8080:
-                    continue
-                else:
-                    artefact['APP_PORT'] = conn.laddr.port
+    
+    if app_runtime=='jboss':
+        for proc in psutil.process_iter():
+            if "jboss" in str(proc.as_dict().values()):
+                break
+        artefact['APP_RUNTIME'] = app_runtime
+        war_files = glob(proc.environ()['JBOSS_HOME'] + '/standalone/deployments/*.war')
+        artefact['APP_DIR'] = war_files
+        artefact['APP_CONFIG'] = proc.environ()['JBOSS_HOME'] + '/standalone/configuration/standalone.xml'
+        for conn in proc.connections():
+            if conn.laddr.port == 8080:
+                continue
+            else:
+                artefact['APP_PORT'] = conn.laddr.port
+
 
     if app_runtime == 'httpd':
         for proc in psutil.process_iter():
@@ -111,3 +112,4 @@ def build_dockerfile(runtime):
 
 if __name__ == '__main__':
     build_dockerfile()
+
