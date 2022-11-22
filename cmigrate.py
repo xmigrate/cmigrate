@@ -72,7 +72,7 @@ def generate_docker_file(artefacts):
     # elif artefacts['APP_RUNTIME'] == "httpd":
     #     TEMPLATE_FILE = "Dockerfile-httpd.j2"
     template = templateEnv.get_template(TEMPLATE_FILE)
-    output_dir = './artefact'
+    output_dir = 'artefact'
     isExist = os.path.exists(output_dir)
     if not isExist:
         os.makedirs(output_dir)
