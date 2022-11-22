@@ -1,8 +1,10 @@
 FROM registry.access.redhat.com/jboss-eap-7/eap71-openshift
 LABEL maintainer="xmigrate.cloud"
 {% for artefact in artefacts.APP_DIR %}
-COPY {{ artefact }} standalone/deployments
+COPY {{ artefact }} $JBOSS_HOME/standalone/deployments/
+USER root
 {% endfor %}
-COPY {{ artefacts.APP_CONFIG }} /bin/standalone/configuration/standalone.xml
-EXPOSE {{ artefacts.APP_PORT }}
-CMD ["standalone.sh", "run"]
+COPY {{ artefacts.APP_CONFIG }} $JBOSS_HOME/standalone/configuration/standalone.xml
+EXPOSE 8080 9990 9999
+RUN chown jboss:jboss $JBOSS_HOME/standalone/deployments/
+USER jboss
