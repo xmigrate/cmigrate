@@ -2,6 +2,9 @@
 # Overview
 Cmigrate is an open-source project for migrating your VM-based application deployments to container. Cmigrate is a CLI based tool wriitten in python which can discover the application runtime on the server and generate a docker file and the application artifacts to containerize.
 
+![demo-tomcat-cmigrate](https://user-images.githubusercontent.com/67468756/203218711-80d74f32-874c-433b-aa35-2675dc97aeaf.gif)
+
+
 ## Current release
 ---
 
